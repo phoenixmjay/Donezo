@@ -1,2 +1,2 @@
 # Donezo
-AI accountability app
+AI accountability app to get it all done
