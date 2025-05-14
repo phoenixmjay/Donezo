@@ -1,0 +1,467 @@
+    %% 1. USERS AND AUTHENTICATION
+    users {
+        UUID user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR full_name
+        VARCHAR display_name
+        VARCHAR password_hash
+        TEXT avatar_url
+        TEXT bio
+        VARCHAR timezone
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        TIMESTAMP last_login
+        VARCHAR account_status
+        BOOLEAN email_verified
+    }
+
+    auth_providers {
+        UUID provider_id PK
+        UUID user_id FK
+        VARCHAR provider_name
+        VARCHAR provider_user_id
+        JSONB provider_data
+        TIMESTAMP created_at
+    }
+
+    sessions {
+        UUID session_id PK
+        UUID user_id FK
+        TEXT token
+        JSONB device_info
+        VARCHAR ip_address
+        TIMESTAMP created_at
+        TIMESTAMP expires_at
+        BOOLEAN is_active
+    }
+
+    user_preferences {
+        UUID preference_id PK
+        UUID user_id FK
+        JSONB notification_settings
+        VARCHAR theme
+        VARCHAR language
+        JSONB privacy_settings
+        JSONB ai_personality_settings
+        TIMESTAMP updated_at
+    }
+
+    %% 2. SUBSCRIPTION AND PAYMENTS
+    subscription_plans {
+        UUID plan_id PK
+        VARCHAR name
+        TEXT description
+        DECIMAL price
+        VARCHAR billing_interval
+        JSONB features
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    user_subscriptions {
+        UUID subscription_id PK
+        UUID user_id FK
+        UUID plan_id FK
+        VARCHAR status
+        TIMESTAMP start_date
+        TIMESTAMP end_date
+        BOOLEAN auto_renew
+        TIMESTAMP trial_end_date
+        VARCHAR external_subscription_id
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    payment_methods {
+        UUID payment_method_id PK
+        UUID user_id FK
+        VARCHAR payment_type
+        VARCHAR provider
+        VARCHAR token_reference
+        BOOLEAN is_default
+        VARCHAR last_four
+        VARCHAR expiry_date
+        JSONB billing_address
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    payment_transactions {
+        UUID transaction_id PK
+        UUID user_id FK
+        UUID subscription_id FK
+        UUID payment_method_id FK
+        DECIMAL amount
+        VARCHAR currency
+        VARCHAR status
+        TIMESTAMP transaction_date
+        VARCHAR external_transaction_id
+        JSONB details
+    }
+
+    %% 3. CHAT FUNCTIONALITY
+    conversations {
+        UUID conversation_id PK
+        UUID user_id FK
+        VARCHAR title
+        JSONB context
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        BOOLEAN is_archived
+        UUID goal_id FK
+        VARCHAR category
+    }
+
+    messages {
+        UUID message_id PK
+        UUID conversation_id FK
+        VARCHAR sender_type
+        TEXT content
+        TIMESTAMP created_at
+        VARCHAR message_type
+        TEXT media_url
+        BOOLEAN is_read
+        DECIMAL sentiment_score
+        JSONB metadata
+    }
+
+    prompt_categories {
+        UUID category_id PK
+        VARCHAR name
+        TEXT description
+        VARCHAR icon
+        BOOLEAN is_system
+        TIMESTAMP created_at
+    }
+
+    saved_prompts {
+        UUID prompt_id PK
+        UUID user_id FK
+        UUID category_id FK
+        VARCHAR title
+        TEXT content
+        BOOLEAN is_favorite
+        INTEGER usage_count
+        BOOLEAN is_system
+        TEXT[] tags
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    message_reactions {
+        UUID reaction_id PK
+        UUID message_id FK
+        UUID user_id FK
+        VARCHAR reaction_type
+        TIMESTAMP created_at
+    }
+
+    %% 4. TIMELINE AND CALENDAR
+    event_categories {
+        UUID category_id PK
+        UUID user_id FK
+        VARCHAR name
+        VARCHAR color
+        VARCHAR icon
+        BOOLEAN is_default
+        TIMESTAMP created_at
+    }
+
+    events {
+        UUID event_id PK
+        UUID user_id FK
+        UUID category_id FK
+        VARCHAR title
+        TEXT description
+        TIMESTAMP start_time
+        TIMESTAMP end_time
+        BOOLEAN all_day
+        TEXT location
+        BOOLEAN is_completed
+        VARCHAR priority
+        UUID recurring_event_id FK
+        UUID goal_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    recurring_events {
+        UUID recurring_id PK
+        UUID user_id FK
+        VARCHAR frequency
+        INTEGER interval
+        INTEGER[] days_of_week
+        INTEGER day_of_month
+        INTEGER month_of_year
+        DATE start_date
+        DATE end_date
+        INTEGER max_occurrences
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    event_reminders {
+        UUID reminder_id PK
+        UUID event_id FK
+        INTEGER remind_before_minutes
+        VARCHAR[] notification_type
+        TIMESTAMP created_at
+    }
+
+    %% 5. GOAL TRACKING
+    goal_categories {
+        UUID category_id PK
+        UUID user_id FK
+        VARCHAR name
+        VARCHAR color
+        VARCHAR icon
+        BOOLEAN is_default
+        TIMESTAMP created_at
+    }
+
+    goals {
+        UUID goal_id PK
+        UUID user_id FK
+        UUID category_id FK
+        VARCHAR title
+        TEXT description
+        DATE start_date
+        DATE target_date
+        DATE completion_date
+        VARCHAR status
+        DECIMAL progress_percent
+        INTEGER priority
+        VARCHAR visibility
+        UUID parent_goal_id FK
+        TEXT[] tags
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    goal_milestones {
+        UUID milestone_id PK
+        UUID goal_id FK
+        VARCHAR title
+        TEXT description
+        DATE target_date
+        DATE completion_date
+        BOOLEAN is_completed
+        INTEGER order_index
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    goal_metrics {
+        UUID metric_id PK
+        UUID goal_id FK
+        VARCHAR name
+        TEXT description
+        VARCHAR unit
+        DECIMAL target_value
+        DECIMAL current_value
+        BOOLEAN is_higher_better
+        VARCHAR display_type
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    goal_check_ins {
+        UUID check_in_id PK
+        UUID goal_id FK
+        TIMESTAMP check_in_date
+        TEXT notes
+        INTEGER mood_rating
+        JSONB progress_update
+        TEXT challenges
+        TEXT wins
+        TEXT ai_feedback
+        TIMESTAMP created_at
+    }
+
+    %% 6. GAMIFICATION AND SUPPORT
+    achievements {
+        UUID achievement_id PK
+        VARCHAR name
+        TEXT description
+        VARCHAR icon
+        VARCHAR category
+        JSONB requirements
+        INTEGER points
+        BOOLEAN is_hidden
+        TIMESTAMP created_at
+    }
+
+    user_achievements {
+        UUID user_achievement_id PK
+        UUID user_id FK
+        UUID achievement_id FK
+        TIMESTAMP earned_at
+        DECIMAL progress
+        BOOLEAN is_shared
+    }
+
+    streaks {
+        UUID streak_id PK
+        UUID user_id FK
+        VARCHAR streak_type
+        INTEGER current_count
+        INTEGER longest_count
+        DATE last_activity_date
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    rewards {
+        UUID reward_id PK
+        VARCHAR name
+        TEXT description
+        INTEGER points_required
+        VARCHAR reward_type
+        VARCHAR icon
+        BOOLEAN is_active
+        TIMESTAMP created_at
+    }
+
+    support_resources {
+        UUID resource_id PK
+        VARCHAR title
+        TEXT content
+        VARCHAR resource_type
+        VARCHAR category
+        TEXT[] tags
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    journal_prompts {
+        UUID prompt_id PK
+        VARCHAR title
+        TEXT content
+        VARCHAR category
+        TEXT[] mood_tags
+        BOOLEAN is_system
+        UUID user_id FK
+        TIMESTAMP created_at
+    }
+
+    journals {
+        UUID journal_id PK
+        UUID user_id FK
+        VARCHAR title
+        TEXT content
+        INTEGER mood_rating
+        UUID prompt_id FK
+        TEXT[] tags
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        BOOLEAN is_private
+    }
+
+    %% 7. SOCIAL AND COMMUNITY
+    accountability_partners {
+        UUID partnership_id PK
+        UUID user_id FK
+        UUID partner_id FK
+        VARCHAR status
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        JSONB permissions
+    }
+
+    groups {
+        UUID group_id PK
+        VARCHAR name
+        TEXT description
+        UUID created_by FK
+        BOOLEAN is_private
+        INTEGER max_members
+        TEXT cover_image_url
+        VARCHAR category
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    group_memberships {
+        UUID membership_id PK
+        UUID group_id FK
+        UUID user_id FK
+        VARCHAR role
+        TIMESTAMP joined_at
+        VARCHAR status
+    }
+
+    challenges {
+        UUID challenge_id PK
+        VARCHAR title
+        TEXT description
+        DATE start_date
+        DATE end_date
+        UUID created_by FK
+        UUID group_id FK
+        VARCHAR challenge_type
+        JSONB rules
+        TEXT reward_description
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    %% RELATIONSHIPS
+
+    %% Users and Authentication
+    users ||--o{ auth_providers : "has"
+    users ||--o{ sessions : "has"
+    users ||--o{ user_preferences : "has"
+
+    %% Subscription and Payments
+    users ||--o{ user_subscriptions : "has"
+    subscription_plans ||--o{ user_subscriptions : "subscribed to"
+    users ||--o{ payment_methods : "has"
+    users ||--o{ payment_transactions : "makes"
+    payment_methods ||--o{ payment_transactions : "used for"
+    user_subscriptions ||--o{ payment_transactions : "generates"
+
+    %% Chat Functionality
+    users ||--o{ conversations : "has"
+    conversations ||--o{ messages : "contains"
+    users ||--o{ saved_prompts : "creates"
+    prompt_categories ||--o{ saved_prompts : "categorizes"
+    messages ||--o{ message_reactions : "receives"
+    users ||--o{ message_reactions : "gives"
+
+    %% Timeline and Calendar
+    users ||--o{ event_categories : "creates"
+    event_categories ||--o{ events : "categorizes"
+    users ||--o{ events : "schedules"
+    events ||--o{ event_reminders : "has"
+    users ||--o{ recurring_events : "creates"
+    recurring_events ||--o{ events : "generates"
+
+    %% Goal Tracking
+    users ||--o{ goal_categories : "creates"
+    goal_categories ||--o{ goals : "categorizes"
+    users ||--o{ goals : "sets"
+    goals ||--o{ goal_milestones : "has"
+    goals ||--o{ goal_metrics : "measured by"
+    goals ||--o{ goal_check_ins : "tracked by"
+    goals ||--o{ goals : "parent of"
+    goals ||--o{ conversations : "discussed in"
+    goals ||--o{ events : "scheduled for"
+
+    %% Gamification and Support
+    achievements ||--o{ user_achievements : "earned as"
+    users ||--o{ user_achievements : "earns"
+    users ||--o{ streaks : "maintains"
+    users ||--o{ journals : "writes"
+    journal_prompts ||--o{ journals : "inspires"
+    users ||--o{ journal_prompts : "creates"
+
+    %% Social and Community
+    users ||--o{ accountability_partners : "has"
+    users ||--o{ groups : "creates"
+    users ||--o{ group_memberships : "joins"
+    groups ||--o{ group_memberships : "includes"
+    users ||--o{ challenges : "creates"
+    groups ||--o{ challenges : "hosts"
